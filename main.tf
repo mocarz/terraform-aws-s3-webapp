@@ -46,25 +46,46 @@ resource "aws_s3_bucket_acl" "bucket" {
 }
 
 resource "aws_s3_bucket_policy" "policy" {
+  depends_on = [
+    aws_s3_bucket_acl.s3_bucket
+  ]
+
   bucket = aws_s3_bucket.bucket.id
-  policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "PublicReadGetObject",
-            "Effect": "Allow",
-            "Principal": "*",
-            "Action": [
-                "s3:GetObject"
-            ],
-            "Resource": [
-                "arn:aws:s3:::${aws_s3_bucket.bucket.id}/*"
-            ]
-        }
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource = [
+          aws_s3_bucket.bucket.arn,
+          "${aws_s3_bucket.bucket.arn}/*",
+        ]
+      },
     ]
-}
-EOF
+  })
+
+  #   policy = <<EOF
+  # {
+  #     "Version": "2012-10-17",
+  #     "Statement": [
+  #         {
+  #             "Sid": "PublicReadGetObject",
+  #             "Effect": "Allow",
+  #             "Principal": "*",
+  #             "Action": [
+  #                 "s3:GetObject"
+  #             ],
+  #             "Resource": [
+  #                 "arn:aws:s3:::${aws_s3_bucket.bucket.id}/*"
+  #             ]
+  #         }
+  #     ]
+  # }
+  # EOF
 }
 
 resource "aws_s3_object" "webapp" {
